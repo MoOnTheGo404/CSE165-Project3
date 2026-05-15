@@ -21,6 +21,8 @@ public class AgentMovementController : MonoBehaviour
     private Vector3 lastObstacleCheckOrigin;
     private Vector3 lastObstacleCheckDirection = Vector3.forward;
     private float lastObstacleCheckDistance;
+    private Vector3 intendedDestination;
+    private bool hasDestination;
 
     private void Awake()
     {
@@ -58,11 +60,16 @@ public class AgentMovementController : MonoBehaviour
             return;
         }
 
-        Vector3 destination = handGestureDetector.GestureOriginWorld + flatDirection * destinationDistance;
-        destination.y = agentRoot.position.y;
-        CurrentDestination = destination;
-        IsMoving = true;
-        IsBlocked = false;
+        intendedDestination = handGestureDetector.GestureOriginWorld + flatDirection * destinationDistance;
+        intendedDestination.y = agentRoot.position.y;
+
+        CurrentDestination = ClampDestinationBeforeObstacle(intendedDestination, out bool wasClamped);
+        IsBlocked = wasClamped;
+        hasDestination = true;
+
+        Vector3 toDestination = CurrentDestination - agentRoot.position;
+        toDestination.y = 0f;
+        IsMoving = toDestination.magnitude > stoppingDistance;
     }
 
     private void UpdateMovement()
@@ -85,8 +92,9 @@ public class AgentMovementController : MonoBehaviour
 
         Vector3 moveDirection = toDestination / distanceRemaining;
         float moveDistance = Mathf.Min(speed * Time.deltaTime, distanceRemaining);
+        float obstacleProbeDistance = Mathf.Min(moveDistance + obstacleCheckDistance, distanceRemaining);
 
-        if (WillHitObstacle(moveDirection, moveDistance))
+        if (WillHitObstacle(moveDirection, obstacleProbeDistance))
         {
             IsBlocked = true;
             StopMovement();
@@ -96,12 +104,47 @@ public class AgentMovementController : MonoBehaviour
         Vector3 movement = moveDirection * moveDistance;
         agentRoot.position += movement;
         CurrentVelocity = movement / Mathf.Max(Time.deltaTime, Mathf.Epsilon);
-        IsBlocked = false;
 
         RotateToward(moveDirection);
     }
 
-    private bool WillHitObstacle(Vector3 moveDirection, float moveDistance)
+    private Vector3 ClampDestinationBeforeObstacle(Vector3 destination, out bool wasClamped)
+    {
+        wasClamped = false;
+
+        Vector3 toDestination = destination - agentRoot.position;
+        toDestination.y = 0f;
+
+        float castDistance = toDestination.magnitude;
+        if (castDistance <= Mathf.Epsilon)
+        {
+            return destination;
+        }
+
+        Vector3 castDirection = toDestination / castDistance;
+        Vector3 castOrigin = agentRoot.position + Vector3.up * obstacleCheckRadius;
+
+        if (!Physics.SphereCast(
+            castOrigin,
+            obstacleCheckRadius,
+            castDirection,
+            out RaycastHit hit,
+            castDistance,
+            obstacleMask,
+            QueryTriggerInteraction.Ignore
+        ))
+        {
+            return destination;
+        }
+
+        float safeDistance = Mathf.Max(hit.distance - stoppingDistance, 0f);
+        Vector3 clampedDestination = agentRoot.position + castDirection * safeDistance;
+        clampedDestination.y = agentRoot.position.y;
+        wasClamped = true;
+        return clampedDestination;
+    }
+
+    private bool WillHitObstacle(Vector3 moveDirection, float checkDistance)
     {
         if (moveDirection.sqrMagnitude <= Mathf.Epsilon)
         {
@@ -110,7 +153,7 @@ public class AgentMovementController : MonoBehaviour
 
         lastObstacleCheckOrigin = agentRoot.position + Vector3.up * obstacleCheckRadius;
         lastObstacleCheckDirection = moveDirection.normalized;
-        lastObstacleCheckDistance = moveDistance + obstacleCheckDistance;
+        lastObstacleCheckDistance = checkDistance;
 
         return Physics.SphereCast(
             lastObstacleCheckOrigin,
@@ -157,6 +200,13 @@ public class AgentMovementController : MonoBehaviour
         Gizmos.color = IsBlocked ? Color.red : Color.green;
         Gizmos.DrawWireSphere(CurrentDestination, 0.12f);
         Gizmos.DrawLine(root.position, CurrentDestination);
+
+        if (hasDestination)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(intendedDestination, 0.08f);
+            Gizmos.DrawLine(CurrentDestination, intendedDestination);
+        }
 
         Gizmos.color = Color.yellow;
         Vector3 checkOrigin = Application.isPlaying
