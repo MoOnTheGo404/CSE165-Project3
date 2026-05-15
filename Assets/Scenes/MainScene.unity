@@ -608,7 +608,7 @@ GameObject:
   - component: {fileID: 2078254512}
   - component: {fileID: 2078254511}
   - component: {fileID: 2078254510}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Modeled_Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -720,6 +720,7 @@ GameObject:
   - component: {fileID: 2107411750}
   - component: {fileID: 2107411749}
   - component: {fileID: 2107411748}
+  - component: {fileID: 2107411752}
   m_Layer: 0
   m_Name: EmbodiedAgent
   m_TagString: Untagged
@@ -822,6 +823,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2107411752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107411747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f87c80ce71d1e4c1db4baa6c3b195d81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AgentMovementController
+  handGestureDetector: {fileID: 1197563435}
+  agentRoot: {fileID: 2107411751}
+  speed: 1.5
+  rotationSpeed: 540
+  destinationDistance: 2
+  stoppingDistance: 0.08
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 8
+  obstacleCheckRadius: 0.25
+  obstacleCheckDistance: 0.35
 --- !u!1001 &2143597102
 PrefabInstance:
   m_ObjectHideFlags: 0
