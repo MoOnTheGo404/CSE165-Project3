@@ -1054,6 +1054,7 @@ GameObject:
   - component: {fileID: 2107411749}
   - component: {fileID: 2107411748}
   - component: {fileID: 2107411752}
+  - component: {fileID: 2107411753}
   m_Layer: 0
   m_Name: EmbodiedAgent
   m_TagString: Untagged
@@ -1179,6 +1180,22 @@ MonoBehaviour:
     m_Bits: 8
   obstacleCheckRadius: 0.25
   obstacleCheckDistance: 0.35
+--- !u!114 &2107411753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107411747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d549f55a5f2234f1a9353a4baa860cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AgentAnimationController
+  movementController: {fileID: 2107411752}
+  animator: {fileID: 0}
+  isWalkingParameter: IsWalking
+  speedParameter: Speed
 --- !u!1001 &2143597102
 PrefabInstance:
   m_ObjectHideFlags: 0
