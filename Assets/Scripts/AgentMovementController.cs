@@ -34,21 +34,36 @@ public class AgentMovementController : MonoBehaviour
 
     private void Update()
     {
-        if (handGestureDetector == null || agentRoot == null)
+        if (agentRoot == null)
         {
             StopMovement();
             previousGestureActive = false;
             return;
         }
 
-        bool gestureActive = handGestureDetector.IsGestureActive;
-        if (gestureActive && !previousGestureActive)
+        if (handGestureDetector != null)
         {
-            SetDestinationFromGesture();
+            bool gestureActive = handGestureDetector.IsGestureActive;
+            if (gestureActive && !previousGestureActive)
+            {
+                SetDestinationFromGesture();
+            }
+
+            previousGestureActive = gestureActive;
         }
 
-        previousGestureActive = gestureActive;
         UpdateMovement();
+    }
+
+    public void SetExternalDestination(Vector3 destination)
+    {
+        if (agentRoot == null)
+        {
+            return;
+        }
+
+        destination.y = agentRoot.position.y;
+        SetDestination(destination);
     }
 
     private void SetDestinationFromGesture()
@@ -60,9 +75,14 @@ public class AgentMovementController : MonoBehaviour
             return;
         }
 
-        intendedDestination = handGestureDetector.GestureOriginWorld + flatDirection * destinationDistance;
-        intendedDestination.y = agentRoot.position.y;
+        Vector3 destination = handGestureDetector.GestureOriginWorld + flatDirection * destinationDistance;
+        destination.y = agentRoot.position.y;
+        SetDestination(destination);
+    }
 
+    private void SetDestination(Vector3 destination)
+    {
+        intendedDestination = destination;
         CurrentDestination = ClampDestinationBeforeObstacle(intendedDestination, out bool wasClamped);
         IsBlocked = wasClamped;
         hasDestination = true;
